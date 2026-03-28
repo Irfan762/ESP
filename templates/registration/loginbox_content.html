@@ -1,0 +1,51 @@
+<div id="loginbox" class="d-flex align-items-center">
+  {% if login_result %}
+    <span class="badge bg-warning text-dark me-3 rounded-pill px-3 py-2 shadow-sm">{{ login_result }}</span>
+  {% endif %}
+  <!-- LOGGED IN STATE -->
+  <div class="logged_in hidden">
+    <div class="dropdown">
+      <button class="btn btn-light dropdown-toggle rounded-pill shadow-sm d-flex align-items-center gap-2 px-3 py-2 fw-bold text-dark border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.8rem;">
+          <i class="fas fa-user"></i>
+        </div>
+        Hello, <span id="user_first_name" class="text-primary mx-1">User</span>!
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-3">
+        <li><a class="dropdown-item py-2" href="/myesp/accountmanage/"><i class="fas fa-cog fa-fw me-2 text-muted"></i> Manage Account</a></li>
+        <li><a class="dropdown-item py-2" href="/myesp/loginhelp.html"><i class="fas fa-question-circle fa-fw me-2 text-muted"></i> Help</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item py-2 text-danger fw-bold" href="/myesp/signout"><i class="fas fa-sign-out-alt fa-fw me-2"></i> Logout</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item py-1 text-muted small" href="https://www.learningu.org/about/privacy/" target="_blank">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <!-- NOT LOGGED IN STATE -->
+  <div class="not_logged_in hidden">
+    <form name="loginform" id="loginform" method="post" action="/myesp/login/" class="d-flex align-items-center gap-2 mb-0">
+      
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-user"></i></span>
+        <input type="text" name="username" id="user" placeholder="Username" class="form-control border-start-0 ps-0 shadow-none" maxlength="255" />
+      </div>
+      
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-lock"></i></span>
+        <input type="password" name="password" id="pass" placeholder="Password" class="form-control border-start-0 ps-0 shadow-none" maxlength="255" />
+      </div>
+      <div class="btn-group btn-group-sm shadow-sm" role="group">
+        <button class="btn btn-primary fw-bold px-3" id="gologin" type="submit">Login</button>
+        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="visually-hidden">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+          <li><a class="dropdown-item py-2" href="/myesp/register"><i class="fas fa-user-plus fa-fw me-2 text-primary"></i> Register</a></li>
+          <li><a class="dropdown-item py-2" href="/myesp/passwdrecover/"><i class="fas fa-key fa-fw me-2 text-muted"></i> Forgot Password</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item py-2" href="/myesp/loginhelp.html"><i class="fas fa-question-circle fa-fw me-2 text-muted"></i> Help</a></li>
+        </ul>
+      </div>
+    </form>
+  </div>
+</div>

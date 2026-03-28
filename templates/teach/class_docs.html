@@ -1,0 +1,129 @@
+{% extends "main.html" %}
+{% block title %}Class Related Documents for {{cls.title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h1 class="fw-bold mb-2">Document Management</h1>
+      <h4 class="text-muted fw-normal">{{ cls.title }} ({{ cls.emailcode }})</h4>
+      <p class="lead text-secondary mt-3">
+        Upload your syllabus, lesson plans, presentations, and other materials. 
+        These documents will be viewable by your students.
+      </p>
+    </div>
+  </div>
+  {% if copy_message %}
+    <div class="alert {% if 'Successfully' in copy_message %}alert-success border-success{% else %}alert-danger border-danger{% endif %} d-flex align-items-center rounded-3 shadow-sm mb-4" role="alert">
+      <i class="fas fa-info-circle me-3 fs-5"></i>
+      <div><strong>Notice:</strong> {{ copy_message }}</div>
+    </div>
+  {% endif %}
+  <div class="row g-4">
+    <!-- LEFT COLUMN: Current Documents -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0 h-100 rounded-4">
+        <div class="card-header bg-white border-bottom pb-3 pt-4 px-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0"><i class="fas fa-folder-open text-primary me-2"></i> Current Documents</h5>
+          <span class="badge bg-primary rounded-pill">{{ cls.getDocuments|length }} Files</span>
+        </div>
+        
+        <div class="card-body p-0">
+          {% if not cls.getDocuments %}
+            <div class="p-5 text-center text-muted">
+              <i class="fas fa-file-excel fa-3x mb-3 text-light"></i>
+              <h6>No documents found</h6>
+              <p class="small mb-0">Please add your first document using the form.</p>
+            </div>
+          {% else %}
+            <ul class="list-group list-group-flush rounded-bottom-4">
+              {% for doc in cls.getDocuments %}
+              <li class="list-group-item p-3 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div class="d-flex align-items-center text-truncate">
+                  <div class="bg-light p-2 rounded me-3 text-secondary">
+                    <i class="fas fa-file-alt fa-lg"></i>
+                  </div>
+                  <a href="{{ doc.download_path }}" class="fw-bold text-decoration-none text-dark stretched-link-ignore">{{ doc.friendly_name }}</a>
+                </div>
+                
+                <div class="d-flex gap-2">
+                  <!-- Rename Form directly inline -->
+                  <form method="post" action="./{{ cls.id }}" enctype="multipart/form-data" class="d-flex gap-2 m-0 z-index-2 position-relative">
+                    <input type="hidden" name="docid" value="{{ doc.id }}">
+                    <input type="hidden" name="command" value="rename">
+                    <div style="width: 150px;">
+                      {{ renameform.title }} <!-- Assumes it renders an input; you'll style it with .form-control .form-control-sm -->
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" type="submit">Rename</button>
+                  </form>
+                  
+                  <!-- Delete Form -->
+                  <form method="post" action="./{{ cls.id }}" onsubmit="return confirm('Are you sure that you want to delete {{ doc.friendly_name|escapejs|escape }}?');" class="m-0 z-index-2 position-relative">
+                    <input type="hidden" name="docid" value="{{ doc.id }}">
+                    <input type="hidden" name="command" value="delete">
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" type="submit" aria-label="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT COLUMN: Upload & History -->
+    <div class="col-lg-5 d-flex flex-column gap-4">
+      
+      <!-- Upload Box -->
+      <div class="card shadow-sm border-0 rounded-4 border-top border-primary border-4">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="fas fa-cloud-upload-alt text-primary me-2"></i> Add a Document</h5>
+          <p class="small text-muted mb-4">Select a file from your computer to upload. Enter a descriptive title (e.g. "Lecture Notes").</p>
+          
+          <form method="post" action="./{{ cls.id }}" enctype="multipart/form-data">
+            <input type="hidden" name="command" value="add">
+            <!-- Render the form nicely -> In Django you should add the .form-control classes, here we just output it block -->
+            <div class="mb-3 bg-light p-3 rounded border">
+              {{ uploadform.as_p }}
+            </div>
+            <button class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm" type="submit">
+              <i class="fas fa-upload me-2"></i> Submit Document
+            </button>
+          </form>
+        </div>
+      </div>
+      <!-- Previous Documents Box -->
+      {% if previous_docs %}
+      <div class="card shadow-sm border-0 rounded-4 bg-light">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3"><i class="fas fa-history text-secondary me-2"></i> Previous Class Materials</h5>
+          <p class="small text-muted mb-4">Quickly copy a useful document you've uploaded in a previous class into this one.</p>
+          
+          <div class="list-group list-group-flush border">
+            {% for p_doc in previous_docs %}
+            <div class="list-group-item d-flex justify-content-between align-items-center p-3 bg-white">
+              <div class="text-truncate me-2">
+                <a href="{{ p_doc.download_path }}" class="fw-bold text-decoration-none text-dark d-block text-truncate">{{ p_doc.friendly_name }}</a>
+                <small class="text-muted"><i class="fas fa-tag mx-1"></i> {{ p_doc.owner_title }}</small>
+              </div>
+              <form method="post" action="./{{ cls.id }}" class="m-0">
+                <input type="hidden" name="command" value="copy_doc">
+                <input type="hidden" name="docid" value="{{ p_doc.id }}">
+                <button class="btn btn-sm btn-light border rounded-pill shadow-sm" type="submit">
+                  Copy <i class="fas fa-arrow-right ms-1"></i>
+                </button>
+              </form>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="mt-5 text-center">
+    <a href="/esp/" class="btn btn-outline-secondary rounded-pill px-4">⬅ Return to Teacher Dashboard</a>
+  </div>
+</div>
+{% endblock %}

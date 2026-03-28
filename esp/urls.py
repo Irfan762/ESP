@@ -10,6 +10,24 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 import json
 
+def class_docs(request):
+    """Dummy view to render the class_docs prototype."""
+    mock_cls = {
+        "title": "Quantum Computing 101",
+        "emailcode": "QC101",
+        "id": "1",
+        "getDocuments": [
+            {"id": "d1", "friendly_name": "Syllabus_QC101.pdf", "download_path": "#"},
+            {"id": "d2", "friendly_name": "Lecture_1_Slides.pptx", "download_path": "#"}
+        ]
+    }
+    mock_previous = [
+        {"id": "p1", "friendly_name": "Intro_Physics_Review.pdf", "owner_title": "Physics 101", "download_path": "#"}
+    ]
+    return render(request, "teach/class_docs.html", {
+        "cls": mock_cls,
+        "previous_docs": mock_previous
+    })
 
 # ── Scheduling grid view ──────────────────────────────────────────────────────
 @login_required
@@ -71,6 +89,9 @@ urlpatterns = [
 
     # ── AJAX endpoint that Scheduler.js POSTs to ──
     path("ajax_schedule_class", ajax_schedule_class, name="ajax_schedule_class"),
+
+    # ── Upload prototype view ──
+    path("teach/class_docs", class_docs, name="class_docs"),
 
     path("", lambda r: HttpResponse("ESP prototype"), name="home"),
 ]
