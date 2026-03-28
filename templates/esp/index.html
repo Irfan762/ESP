@@ -1,0 +1,266 @@
+{% extends "main.html" %}
+{% block title %}ESP — Dashboard{% endblock %}
+
+{% block stylesheets %}
+<style>
+  /* ── Hero ──────────────────────────────────────────────────────── */
+  .hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(13,110,253,0.25);
+  }
+
+  /* ── Hover cards ───────────────────────────────────────────────── */
+  .hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0,0,0,0.06);
+    cursor: pointer;
+  }
+  .hover-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+    border-color: #0d6efd;
+  }
+
+  /* ── Icon wrapper ──────────────────────────────────────────────── */
+  .icon-wrapper {
+    width: 60px; height: 60px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Stats strip ───────────────────────────────────────────────── */
+  .stat-strip {
+    background: #fff;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  .stat-item { border-right: 1px solid #e9ecef; }
+  .stat-item:last-child { border-right: none; }
+  .stat-number { font-size: 2rem; font-weight: 800; color: #0d6efd; }
+
+  /* ── Section badge ─────────────────────────────────────────────── */
+  .section-badge {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── Before/After comparison ───────────────────────────────────── */
+  .compare-card { border-radius: 0.75rem; overflow: hidden; }
+  .compare-old  { background: #fff8f0; border: 2px solid #ffc107; }
+  .compare-new  { background: #f0fff4; border: 2px solid #198754; }
+  .compare-header {
+    padding: 10px 16px; font-weight: 700; font-size: 0.85rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .compare-old .compare-header  { background: #fff3cd; color: #856404; }
+  .compare-new .compare-header  { background: #d1e7dd; color: #0f5132; }
+  .compare-body { padding: 16px; font-size: 0.82rem; font-family: monospace; }
+  .compare-old .compare-body { color: #6c3a00; }
+  .compare-new .compare-body { color: #0a3622; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────── -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="hero-section p-5 text-center">
+        <span class="badge bg-white text-primary fw-bold mb-3 px-3 py-2 rounded-pill">
+          GSoC 2024 — Modernization Prototype
+        </span>
+        <h1 class="display-4 fw-bold mb-3">Welcome to ESP Portal</h1>
+        <p class="lead mb-4 opacity-75">
+          Educational Studies Program &nbsp;·&nbsp; MIT Splash 2024
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a href="/manage/mit_splash/2024/ajaxscheduling"
+             class="btn btn-light btn-lg px-5 py-3 rounded-pill fw-bold text-primary shadow-sm">
+            <i class="fas fa-calendar-alt me-2"></i> Open Scheduler
+          </a>
+          <a href="/teach/bioedit"
+             class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">
+            <i class="fas fa-user-edit me-2"></i> Edit Bio
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats strip ───────────────────────────────────────────────── -->
+  <div class="row mb-5">
+    <div class="col-12">
+      <div class="stat-strip">
+        <div class="row g-0 text-center py-3">
+          <div class="col stat-item py-2">
+            <div class="stat-number">142</div>
+            <div class="text-muted small fw-semibold">Students</div>
+          </div>
+          <div class="col stat-item py-2">
+            <div class="stat-number">38</div>
+            <div class="text-muted small fw-semibold">Teachers</div>
+          </div>
+          <div class="col stat-item py-2">
+            <div class="stat-number">24</div>
+            <div class="text-muted small fw-semibold">Classes</div>
+          </div>
+          <div class="col stat-item py-2">
+            <div class="stat-number">6</div>
+            <div class="text-muted small fw-semibold">Rooms</div>
+          </div>
+          <div class="col py-2">
+            <div class="stat-number text-success">89%</div>
+            <div class="text-muted small fw-semibold">Scheduled</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feature cards ─────────────────────────────────────────────── -->
+  <div class="row g-4 mb-5">
+
+    <div class="col-md-4">
+      <div class="card h-100 p-4 hover-card bg-white shadow-sm">
+        <div class="icon-wrapper bg-primary bg-opacity-10 text-primary">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <span class="section-badge bg-primary bg-opacity-10 text-primary mb-2" style="width:fit-content">Students</span>
+        <h2 class="h4 fw-bold">
+          <a href="/learn/" class="text-decoration-none text-dark">Learn</a>
+        </h2>
+        <p class="text-muted mb-3">
+          Browse courses, register for classes, and manage your student profile.
+        </p>
+        <a href="/learn/" class="btn btn-outline-primary btn-sm rounded-pill mt-auto">
+          Go to Learn <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 p-4 hover-card bg-white shadow-sm">
+        <div class="icon-wrapper bg-success bg-opacity-10 text-success">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <span class="section-badge bg-success bg-opacity-10 text-success mb-2" style="width:fit-content">Teachers</span>
+        <h2 class="h4 fw-bold">
+          <a href="/teach/" class="text-decoration-none text-dark">Teach</a>
+        </h2>
+        <p class="text-muted mb-3">
+          Manage your classes, update your biography, and view your schedule.
+        </p>
+        <a href="/teach/" class="btn btn-outline-success btn-sm rounded-pill mt-auto">
+          Go to Teach <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 p-4 hover-card bg-white shadow-sm">
+        <div class="icon-wrapper bg-warning bg-opacity-10 text-warning">
+          <i class="fas fa-hands-helping"></i>
+        </div>
+        <span class="section-badge bg-warning bg-opacity-10 text-warning mb-2" style="width:fit-content">Volunteers</span>
+        <h2 class="h4 fw-bold">
+          <a href="/volunteer/" class="text-decoration-none text-dark">Volunteer</a>
+        </h2>
+        <p class="text-muted mb-3">
+          Coordinate events, support staff, and contribute to the community.
+        </p>
+        <a href="/volunteer/" class="btn btn-outline-warning btn-sm rounded-pill mt-auto">
+          Go to Volunteer <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Before / After comparison ─────────────────────────────────── -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3 class="fw-bold mb-1">
+        <i class="fas fa-code-branch text-primary me-2"></i>
+        GSoC Proposal: Before vs After
+      </h3>
+      <p class="text-muted mb-4">
+        This prototype demonstrates the theming modernization from Bootstrap 2 → Bootstrap 5.
+      </p>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="compare-card compare-old h-100">
+        <div class="compare-header">
+          <i class="fas fa-times-circle"></i> BEFORE — Bootstrap 2 (Legacy)
+        </div>
+        <div class="compare-body">
+          &lt;div class="row-fluid"&gt;<br>
+          &nbsp;&nbsp;&lt;div class="span4"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="well"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;table width="100%"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;tr&gt;&lt;td&gt;...&lt;/td&gt;&lt;/tr&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/table&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;<br>
+          &nbsp;&nbsp;&lt;/div&gt;<br>
+          &lt;/div&gt;
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="compare-card compare-new h-100">
+        <div class="compare-header">
+          <i class="fas fa-check-circle"></i> AFTER — Bootstrap 5 (Modern)
+        </div>
+        <div class="compare-body">
+          &lt;div class="row g-4"&gt;<br>
+          &nbsp;&nbsp;&lt;div class="col-md-4"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="card hover-card shadow-sm"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="card-body p-4"&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...semantic content...<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;<br>
+          &nbsp;&nbsp;&lt;/div&gt;<br>
+          &lt;/div&gt;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Quick links ────────────────────────────────────────────────── -->
+  <div class="row g-3">
+    <div class="col-md-6">
+      <a href="/manage/mit_splash/2024/ajaxscheduling"
+         class="d-flex align-items-center gap-3 p-3 bg-white rounded-3 shadow-sm text-decoration-none hover-card">
+        <div class="icon-wrapper bg-info bg-opacity-10 text-info mb-0" style="width:48px;height:48px;font-size:1.2rem;flex-shrink:0">
+          <i class="fas fa-th"></i>
+        </div>
+        <div>
+          <div class="fw-bold text-dark">AJAX Scheduling Grid</div>
+          <div class="text-muted small">Drag-and-drop class scheduling — Playwright tested</div>
+        </div>
+        <i class="fas fa-chevron-right text-muted ms-auto"></i>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a href="/teach/bioedit"
+         class="d-flex align-items-center gap-3 p-3 bg-white rounded-3 shadow-sm text-decoration-none hover-card">
+        <div class="icon-wrapper bg-purple bg-opacity-10 text-purple mb-0" style="width:48px;height:48px;font-size:1.2rem;flex-shrink:0;background:rgba(111,66,193,0.1);color:#6f42c1">
+          <i class="fas fa-id-card"></i>
+        </div>
+        <div>
+          <div class="fw-bold text-dark">Teacher Bio Editor</div>
+          <div class="text-muted small">Modern Bootstrap 5 form — replaces table layout</div>
+        </div>
+        <i class="fas fa-chevron-right text-muted ms-auto"></i>
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

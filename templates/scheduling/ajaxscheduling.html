@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP Scheduling Grid — {{ program_url }}</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    /* ── Top navbar ───────────────────────────────────────────────────── */
+    .navbar {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+      color: #fff;
+      padding: 0 28px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 20px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .navbar-brand .logo {
+      width: 34px; height: 34px; background: #fff;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-weight: 900; color: #1a237e; font-size: 16px;
+    }
+    .navbar-meta { font-size: 13px; opacity: 0.75; }
+    .navbar-actions { display: flex; gap: 10px; align-items: center; }
+    .btn-nav {
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+      color: #fff; padding: 6px 14px; border-radius: 5px;
+      font-size: 13px; cursor: pointer; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.28); }
+
+    /* ── Page layout ──────────────────────────────────────────────────── */
+    .page-wrapper {
+      display: flex; gap: 0;
+      max-width: 1400px; margin: 24px auto; padding: 0 20px;
+    }
+
+    /* ── Sidebar — unscheduled sections ──────────────────────────────── */
+    .sidebar {
+      width: 240px; flex-shrink: 0;
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 18px 14px;
+      margin-right: 20px;
+      height: fit-content;
+      position: sticky; top: 78px;
+    }
+    .sidebar-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: #555; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 2px solid #e8eaf6;
+    }
+    .sidebar-hint {
+      font-size: 11px; color: #888; margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    /* Section chips */
+    div.section-draggable {
+      background: linear-gradient(135deg, #3949ab, #5c6bc0);
+      color: #fff;
+      border-radius: 7px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: grab;
+      user-select: none;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(57,73,171,0.3);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    div.section-draggable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(57,73,171,0.4);
+    }
+    div.section-draggable.dragging {
+      opacity: 0.45; cursor: grabbing; transform: scale(0.97);
+    }
+    .chip-icon {
+      width: 24px; height: 24px; background: rgba(255,255,255,0.2);
+      border-radius: 4px; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; flex-shrink: 0;
+    }
+    .chip-info { display: flex; flex-direction: column; }
+    .chip-name { font-size: 12px; font-weight: 700; }
+    .chip-code { font-size: 10px; opacity: 0.8; margin-top: 1px; }
+
+    /* Color variants for chips */
+    div.section-draggable[data-section-id="101"] { background: linear-gradient(135deg,#1565c0,#1976d2); }
+    div.section-draggable[data-section-id="102"] { background: linear-gradient(135deg,#6a1b9a,#8e24aa); }
+    div.section-draggable[data-section-id="103"] { background: linear-gradient(135deg,#2e7d32,#388e3c); }
+    div.section-draggable[data-section-id="104"] { background: linear-gradient(135deg,#e65100,#f57c00); }
+    div.section-draggable[data-section-id="105"] { background: linear-gradient(135deg,#ad1457,#d81b60); }
+
+    /* ── Main content area ────────────────────────────────────────────── */
+    .main-content { flex: 1; min-width: 0; }
+
+    /* ── Message panel ────────────────────────────────────────────────── */
+    #scheduler-message-panel {
+      display: none;
+      padding: 13px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      align-items: center;
+      gap: 10px;
+    }
+    #scheduler-message-panel.error {
+      display: flex;
+      background: #fdecea; border: 1px solid #f44336; color: #c62828;
+    }
+    #scheduler-message-panel.success {
+      display: flex;
+      background: #e8f5e9; border: 1px solid #4caf50; color: #1b5e20;
+    }
+    .msg-icon { font-size: 18px; }
+
+    /* ── Grid card ────────────────────────────────────────────────────── */
+    .grid-card {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .grid-card-header {
+      background: linear-gradient(135deg,#1a237e,#283593);
+      color: #fff; padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .grid-card-header h2 { font-size: 16px; font-weight: 700; }
+    .grid-card-header .program-badge {
+      background: rgba(255,255,255,0.2); border-radius: 20px;
+      padding: 3px 12px; font-size: 12px;
+    }
+
+    /* Loading spinner */
+    #grid-loading {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 20px; gap: 16px; color: #666;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e8eaf6;
+      border-top-color: #3949ab;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Scheduling table ─────────────────────────────────────────────── */
+    .table-wrapper { overflow-x: auto; }
+    #scheduling-grid {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 600px;
+    }
+    #scheduling-grid thead th {
+      background: #e8eaf6;
+      color: #1a237e;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 16px;
+      text-align: center;
+      border-bottom: 2px solid #c5cae9;
+      white-space: nowrap;
+    }
+    #scheduling-grid thead th:first-child {
+      background: #c5cae9; width: 100px;
+    }
+    #scheduling-grid tbody tr:nth-child(even) td { background: #fafafa; }
+    #scheduling-grid tbody tr:hover td { background: #f3f4fd; }
+
+    /* Time label cell */
+    #scheduling-grid tbody th {
+      background: #e8eaf6; color: #1a237e;
+      font-size: 12px; font-weight: 700;
+      padding: 0 12px; text-align: center;
+      border-right: 2px solid #c5cae9;
+      white-space: nowrap; width: 90px;
+    }
+
+    /* Open drop-target cell */
+    td.ajax-cell-open {
+      border: 1px solid #e0e0e0;
+      height: 72px; width: 160px;
+      text-align: center; vertical-align: middle;
+      cursor: pointer;
+      transition: background 0.15s, border 0.15s;
+      position: relative;
+    }
+    td.ajax-cell-open::after {
+      content: '+';
+      font-size: 22px; color: #c5cae9;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      transition: color 0.15s;
+    }
+    td.ajax-cell-open:hover { background: #e8eaf6; }
+    td.ajax-cell-open:hover::after { color: #3949ab; }
+    td.ajax-cell-open.drag-over {
+      background: #e3f2fd !important;
+      border: 2px dashed #1976d2 !important;
+    }
+    td.ajax-cell-open.drag-over::after { color: #1976d2; content: '↓'; font-size: 20px; }
+
+    /* Occupied cell */
+    td.ajax-cell-occupied {
+      border: 1px solid #e0e0e0;
+      height: 72px; width: 160px;
+      padding: 6px 8px;
+      font-size: 11px; font-weight: 600;
+      vertical-align: middle; text-align: center;
+      background: linear-gradient(135deg,#e8eaf6,#c5cae9);
+      color: #1a237e;
+      border-radius: 0;
+    }
+
+    /* ── Legend ───────────────────────────────────────────────────────── */
+    .legend {
+      display: flex; gap: 20px; padding: 12px 20px;
+      border-top: 1px solid #e8eaf6; font-size: 12px; color: #666;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot {
+      width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+    }
+
+    /* ── Stats bar ────────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      padding: 12px 18px; flex: 1; min-width: 120px;
+      border-left: 4px solid #3949ab;
+    }
+    .stat-card.green { border-left-color: #43a047; }
+    .stat-card.orange { border-left-color: #fb8c00; }
+    .stat-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 26px; font-weight: 800; color: #1a237e; margin-top: 2px; }
+    .stat-card.green .stat-value { color: #2e7d32; }
+    .stat-card.orange .stat-value { color: #e65100; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────────────────── -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <div class="logo">ESP</div>
+      <div>
+        <div>Splash Scheduling</div>
+        <div class="navbar-meta">{{ program_url }}</div>
+      </div>
+    </div>
+    <div class="navbar-actions">
+      <a href="/esp/" class="btn-nav">⬅ Dashboard</a>
+      <a href="/myesp/logout/" class="btn-nav">Logout</a>
+    </div>
+  </nav>
+
+  <!-- ── Page body ──────────────────────────────────────────────────── -->
+  <div class="page-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-title">📚 Unscheduled</div>
+      <div class="sidebar-hint">Drag a section onto an open cell in the grid to schedule it.</div>
+
+      <div class="section-draggable" draggable="true" data-section-id="101">
+        <div class="chip-icon">🐍</div>
+        <div class="chip-info">
+          <span class="chip-name">Intro to Python</span>
+          <span class="chip-code">s101 · 1hr · 20 seats</span>
+        </div>
+      </div>
+
+      <div class="section-draggable" draggable="true" data-section-id="102">
+        <div class="chip-icon">🔐</div>
+        <div class="chip-info">
+          <span class="chip-name">Web Security</span>
+          <span class="chip-code">s102 · 1hr · 15 seats</span>
+        </div>
+      </div>
+
+      <div class="section-draggable" draggable="true" data-section-id="103">
+        <div class="chip-icon">🤖</div>
+        <div class="chip-info">
+          <span class="chip-name">Machine Learning</span>
+          <span class="chip-code">s103 · 2hr · 30 seats</span>
+        </div>
+      </div>
+
+      <div class="section-draggable" draggable="true" data-section-id="104">
+        <div class="chip-icon">🌐</div>
+        <div class="chip-info">
+          <span class="chip-name">Web Dev Basics</span>
+          <span class="chip-code">s104 · 1hr · 25 seats</span>
+        </div>
+      </div>
+
+      <div class="section-draggable" draggable="true" data-section-id="105">
+        <div class="chip-icon">🧬</div>
+        <div class="chip-info">
+          <span class="chip-name">Intro to Biology</span>
+          <span class="chip-code">s105 · 1hr · 18 seats</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="main-content">
+
+      <!-- Message panel -->
+      <div id="scheduler-message-panel">
+        <span class="msg-icon"></span>
+        <span class="msg-text"></span>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-label">Total Slots</div>
+          <div class="stat-value" id="stat-total">—</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Scheduled</div>
+          <div class="stat-value" id="stat-scheduled">0</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-label">Unscheduled</div>
+          <div class="stat-value" id="stat-unscheduled">5</div>
+        </div>
+      </div>
+
+      <!-- Grid card -->
+      <div class="grid-card">
+        <div class="grid-card-header">
+          <h2>🗓 Room × Timeslot Grid</h2>
+          <span class="program-badge">{{ program_url }}</span>
+        </div>
+
+        <!-- Loading state shown while Matrix.js renders -->
+        <div id="grid-loading">
+          <div class="spinner"></div>
+          <span>Matrix.js is loading the grid…</span>
+        </div>
+
+        <!-- Table injected by Matrix.js -->
+        <div class="table-wrapper" id="grid-table-wrapper" style="display:none">
+          <table id="scheduling-grid">
+            <thead>
+              <tr>
+                <th>⏰ Time</th>
+                <th>🏫 Room 101</th>
+                <th>🏫 Room 102</th>
+                <th>🏫 Room 103</th>
+                <th>🏫 Room 104</th>
+              </tr>
+            </thead>
+            <tbody id="grid-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend" id="grid-legend" style="display:none">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f0f0f0;border:1px dashed #bbb"></div>
+            Open slot (drop here)
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:linear-gradient(135deg,#e8eaf6,#c5cae9)"></div>
+            Scheduled class
+          </div>
+          <div class="legend-item" style="margin-left:auto;color:#999;font-size:11px">
+            Drag sections from the left panel onto open cells
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /page-wrapper -->
+
+  <!-- ── Matrix.js — async grid renderer ──────────────────────────── -->
+  <script>
+    (function MatrixJS() {
+      const TIMESLOTS = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM"];
+      const ROOMS     = ["Room 101", "Room 102", "Room 103", "Room 104"];
+
+      function renderGrid() {
+        const tbody = document.getElementById("grid-body");
+        tbody.innerHTML = "";
+
+        TIMESLOTS.forEach(function(slot) {
+          const tr = document.createElement("tr");
+          const th = document.createElement("th");
+          th.textContent = slot;
+          tr.appendChild(th);
+
+          ROOMS.forEach(function(room) {
+            const td = document.createElement("td");
+            td.dataset.timeslot = slot;
+            td.dataset.room     = room;
+            td.className        = "ajax-cell-open";
+            td.title            = "Drop a section here: " + slot + " / " + room;
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        });
+
+        // Update stats
+        const total = TIMESLOTS.length * ROOMS.length;
+        document.getElementById("stat-total").textContent = total;
+
+        // Hide spinner, show table
+        document.getElementById("grid-loading").style.display = "none";
+        document.getElementById("grid-table-wrapper").style.display = "block";
+        document.getElementById("grid-legend").style.display = "flex";
+
+        SchedulerJS.attachDropHandlers();
+      }
+
+      // Simulate Matrix.js async AJAX fetch delay
+      setTimeout(renderGrid, 300);
+    })();
+  </script>
+
+  <!-- ── Scheduler.js — drag-and-drop + AJAX ───────────────────────── -->
+  <script>
+    var SchedulerJS = (function() {
+      var draggedSection = null;
+      var scheduledCount = 0;
+
+      // Drag source handlers
+      document.querySelectorAll(".section-draggable").forEach(function(el) {
+        el.addEventListener("dragstart", function(e) {
+          draggedSection = el;
+          el.classList.add("dragging");
+          e.dataTransfer.setData("text/plain", el.dataset.sectionId);
+          e.dataTransfer.effectAllowed = "move";
+        });
+        el.addEventListener("dragend", function() {
+          el.classList.remove("dragging");
+        });
+      });
+
+      function attachDropHandlers() {
+        document.querySelectorAll("td.ajax-cell-open").forEach(function(cell) {
+          cell.addEventListener("dragover", function(e) {
+            e.preventDefault();
+            cell.classList.add("drag-over");
+          });
+          cell.addEventListener("dragleave", function() {
+            cell.classList.remove("drag-over");
+          });
+          cell.addEventListener("drop", function(e) {
+            e.preventDefault();
+            cell.classList.remove("drag-over");
+            var sectionId = e.dataTransfer.getData("text/plain");
+            if (sectionId) scheduleSection(sectionId, cell);
+          });
+        });
+      }
+
+      function scheduleSection(sectionId, cell) {
+        var csrfToken = getCookie("csrftoken") || "";
+        fetch("/ajax_schedule_class", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            section_id: sectionId,
+            room: cell.dataset.room,
+            timeslot: cell.dataset.timeslot,
+          }),
+        })
+        .then(function(r) {
+          return r.json().then(function(d) { return { status: r.status, data: d }; });
+        })
+        .then(function(result) {
+          if (result.status === 200) {
+            cell.className = "ajax-cell-occupied";
+            cell.innerHTML = draggedSection
+              ? draggedSection.querySelector(".chip-name").textContent
+              : "Scheduled";
+            if (draggedSection) draggedSection.remove();
+            scheduledCount++;
+            updateStats();
+            showMessage("✅ " + (result.data.message || "Class scheduled"), "success");
+          } else {
+            showMessage("❌ " + (result.data.error || "Unknown error"), "error");
+          }
+        })
+        .catch(function(err) {
+          showMessage("❌ Network error: " + err.message, "error");
+        });
+      }
+
+      function showMessage(text, type) {
+        var panel = document.getElementById("scheduler-message-panel");
+        panel.querySelector(".msg-icon").textContent = type === "error" ? "⚠️" : "✅";
+        panel.querySelector(".msg-text").textContent = text;
+        panel.className = type;
+        // Auto-hide after 4 seconds
+        clearTimeout(panel._hideTimer);
+        panel._hideTimer = setTimeout(function() {
+          panel.className = "";
+          panel.style.display = "none";
+        }, 4000);
+      }
+
+      function updateStats() {
+        var remaining = document.querySelectorAll(".section-draggable").length;
+        document.getElementById("stat-scheduled").textContent = scheduledCount;
+        document.getElementById("stat-unscheduled").textContent = remaining;
+      }
+
+      function getCookie(name) {
+        var m = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+        return m ? decodeURIComponent(m[2]) : null;
+      }
+
+      return { attachDropHandlers: attachDropHandlers };
+    })();
+  </script>
+
+</body>
+</html>

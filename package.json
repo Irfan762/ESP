@@ -1,0 +1,20 @@
+{
+  "name": "esp-playwright-tests",
+  "version": "1.0.0",
+  "description": "GSoC ESP-Website Playwright E2E Test Suite",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:report": "npx playwright show-report playwright-html-report"
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  }
+}

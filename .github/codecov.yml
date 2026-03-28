@@ -1,0 +1,47 @@
+##############################################################################
+# .github/codecov.yml
+#
+# GSoC Proposal: Codecov configuration for ESP-Website.
+#
+# WHY PATCH COVERAGE TARGET:
+# "Patch coverage" measures only the lines changed in a PR, not the whole
+# codebase. Setting a 60% patch target means every PR must test at least
+# 60% of its own new/changed lines — this directly incentivises contributors
+# to write tests alongside their code changes, which is the cultural shift
+# the GSoC proposal aims to drive.
+#
+# We use 60% (not 80-100%) as a realistic starting point for a legacy
+# codebase where many modules have zero existing tests. The target can be
+# raised incrementally as coverage improves.
+##############################################################################
+
+coverage:
+  status:
+    project:
+      default:
+        # Overall project coverage — informational, won't block PRs yet
+        # Raise this threshold as the test suite matures
+        target: auto        # compare against base branch, not a fixed %
+        threshold: 2%       # allow up to 2% drop before failing
+
+    patch:
+      default:
+        # WHY 60% patch target:
+        # This is the key 1-line change from the GSoC proposal.
+        # It enforces that new code introduced in a PR is at least 60%
+        # covered by the tests in that same PR.
+        # Replaces the previous setting of `target: auto` (no enforcement).
+        target: 60%
+        threshold: 5%       # allow 5% tolerance for edge cases
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: true     # only comment if coverage changed
+
+ignore:
+  # Don't count migrations, settings, or wsgi boilerplate toward coverage
+  - "esp/*/migrations/**"
+  - "esp/settings*.py"
+  - "esp/wsgi.py"
+  - "conftest.py"

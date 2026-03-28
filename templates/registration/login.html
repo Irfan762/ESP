@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP — Login</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-wrapper {
+      width: 100%; max-width: 420px; padding: 20px;
+    }
+    .login-logo {
+      text-align: center; margin-bottom: 28px;
+    }
+    .login-logo .logo-box {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 64px; height: 64px; background: #fff;
+      border-radius: 16px; font-size: 28px; font-weight: 900;
+      color: #1a237e; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      margin-bottom: 12px;
+    }
+    .login-logo h1 {
+      color: #fff; font-size: 22px; font-weight: 700;
+    }
+    .login-logo p {
+      color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px;
+    }
+    .login-card {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      padding: 36px 32px;
+    }
+    .login-card h2 {
+      font-size: 20px; font-weight: 700; color: #1a237e;
+      margin-bottom: 24px; text-align: center;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 600;
+      color: #444; margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      font-size: 14px; color: #222;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: #3949ab;
+      box-shadow: 0 0 0 3px rgba(57,73,171,0.12);
+    }
+    .btn-login {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 6px;
+    }
+    .btn-login:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+    .errorlist {
+      background: #fdecea; border: 1px solid #f44336;
+      border-radius: 7px; padding: 10px 14px;
+      margin-bottom: 16px; list-style: none;
+      color: #c62828; font-size: 13px; font-weight: 600;
+    }
+    .errorlist li::before { content: "⚠ "; }
+    .login-footer {
+      text-align: center; margin-top: 20px;
+      font-size: 12px; color: rgba(255,255,255,0.6);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-logo">
+      <div class="logo-box">ESP</div>
+      <h1>Educational Studies Program</h1>
+      <p>Scheduling Infrastructure — GSoC Prototype</p>
+    </div>
+
+    <div class="login-card">
+      <h2>🔐 Sign In</h2>
+
+      {% if form.non_field_errors %}
+        <ul class="errorlist" id="login-error">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_username">Username</label>
+          <input type="text" name="username" id="id_username"
+                 placeholder="Enter your username" autofocus>
+        </div>
+        <div class="form-group">
+          <label for="id_password">Password</label>
+          <input type="password" name="password" id="id_password"
+                 placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn-login">Sign In →</button>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      ESP-Website · GSoC 2024 Testing Infrastructure Proposal
+    </div>
+  </div>
+</body>
+</html>

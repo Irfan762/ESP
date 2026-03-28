@@ -1,0 +1,109 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: ESP
+      - generic [ref=e5]:
+        - generic [ref=e6]: Splash Scheduling
+        - generic [ref=e7]: mit_splash/2024
+    - generic [ref=e8]:
+      - link "⬅ Dashboard" [ref=e9] [cursor=pointer]:
+        - /url: /esp/
+      - link "Logout" [ref=e10] [cursor=pointer]:
+        - /url: /myesp/logout/
+  - generic [ref=e11]:
+    - complementary [ref=e12]:
+      - generic [ref=e13]: 📚 Unscheduled
+      - generic [ref=e14]: Drag a section onto an open cell in the grid to schedule it.
+      - generic [ref=e15]:
+        - generic [ref=e16]: 🐍
+        - generic [ref=e17]:
+          - generic [ref=e18]: Intro to Python
+          - generic [ref=e19]: s101 · 1hr · 20 seats
+      - generic [ref=e20]:
+        - generic [ref=e21]: 🔐
+        - generic [ref=e22]:
+          - generic [ref=e23]: Web Security
+          - generic [ref=e24]: s102 · 1hr · 15 seats
+      - generic [ref=e25]:
+        - generic [ref=e26]: 🤖
+        - generic [ref=e27]:
+          - generic [ref=e28]: Machine Learning
+          - generic [ref=e29]: s103 · 2hr · 30 seats
+      - generic [ref=e30]:
+        - generic [ref=e31]: 🌐
+        - generic [ref=e32]:
+          - generic [ref=e33]: Web Dev Basics
+          - generic [ref=e34]: s104 · 1hr · 25 seats
+      - generic [ref=e35]:
+        - generic [ref=e36]: 🧬
+        - generic [ref=e37]:
+          - generic [ref=e38]: Intro to Biology
+          - generic [ref=e39]: s105 · 1hr · 18 seats
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: Total Slots
+          - generic [ref=e44]: "24"
+        - generic [ref=e45]:
+          - generic [ref=e46]: Scheduled
+          - generic [ref=e47]: "0"
+        - generic [ref=e48]:
+          - generic [ref=e49]: Unscheduled
+          - generic [ref=e50]: "5"
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - heading "🗓 Room × Timeslot Grid" [level=2] [ref=e53]
+          - generic [ref=e54]: mit_splash/2024
+        - table [ref=e56]:
+          - rowgroup [ref=e57]:
+            - row "⏰ Time 🏫 Room 101 🏫 Room 102 🏫 Room 103 🏫 Room 104" [ref=e58]:
+              - columnheader "⏰ Time" [ref=e59]
+              - columnheader "🏫 Room 101" [ref=e60]
+              - columnheader "🏫 Room 102" [ref=e61]
+              - columnheader "🏫 Room 103" [ref=e62]
+              - columnheader "🏫 Room 104" [ref=e63]
+          - rowgroup [ref=e64]:
+            - row "9:00 AM + + + +" [ref=e65]:
+              - columnheader "9:00 AM" [ref=e66]
+              - cell "+" [ref=e67] [cursor=pointer]
+              - cell "+" [ref=e68] [cursor=pointer]
+              - cell "+" [ref=e69] [cursor=pointer]
+              - cell "+" [ref=e70] [cursor=pointer]
+            - row "10:00 AM + + + +" [ref=e71]:
+              - columnheader "10:00 AM" [ref=e72]
+              - cell "+" [ref=e73] [cursor=pointer]
+              - cell "+" [ref=e74] [cursor=pointer]
+              - cell "+" [ref=e75] [cursor=pointer]
+              - cell "+" [ref=e76] [cursor=pointer]
+            - row "11:00 AM + + + +" [ref=e77]:
+              - columnheader "11:00 AM" [ref=e78]
+              - cell "+" [ref=e79] [cursor=pointer]
+              - cell "+" [ref=e80] [cursor=pointer]
+              - cell "+" [ref=e81] [cursor=pointer]
+              - cell "+" [ref=e82] [cursor=pointer]
+            - row "1:00 PM + + + +" [ref=e83]:
+              - columnheader "1:00 PM" [ref=e84]
+              - cell "+" [ref=e85] [cursor=pointer]
+              - cell "+" [ref=e86] [cursor=pointer]
+              - cell "+" [ref=e87] [cursor=pointer]
+              - cell "+" [ref=e88] [cursor=pointer]
+            - row "2:00 PM + + + +" [ref=e89]:
+              - columnheader "2:00 PM" [ref=e90]
+              - cell "+" [ref=e91] [cursor=pointer]
+              - cell "+" [ref=e92] [cursor=pointer]
+              - cell "+" [ref=e93] [cursor=pointer]
+              - cell "+" [ref=e94] [cursor=pointer]
+            - row "3:00 PM + + + +" [ref=e95]:
+              - columnheader "3:00 PM" [ref=e96]
+              - cell "+" [ref=e97] [cursor=pointer]
+              - cell "+" [ref=e98] [cursor=pointer]
+              - cell "+" [ref=e99] [cursor=pointer]
+              - cell "+" [ref=e100] [cursor=pointer]
+        - generic [ref=e101]:
+          - generic [ref=e102]: Open slot (drop here)
+          - generic [ref=e104]: Scheduled class
+          - generic [ref=e106]: Drag sections from the left panel onto open cells
+```

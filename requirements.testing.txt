@@ -1,0 +1,28 @@
+# GSoC Proposal: ESP-Website Testing Infrastructure Modernization
+# These dependencies replace the legacy django-selenium setup which is
+# unmaintained and incompatible with modern Django/Python versions.
+
+# Core test runner
+pytest>=7.4.0
+
+# Django integration for pytest — provides live_server, db fixtures, settings override
+pytest-django>=4.7.0
+
+# Playwright integration for pytest — provides page, browser, context fixtures
+# and handles browser lifecycle automatically (no manual driver management)
+pytest-playwright>=0.4.3
+
+# Playwright itself — installs Chromium/Firefox/WebKit via `playwright install`
+playwright>=1.40.0
+
+# Coverage measurement — used by CI to generate XML reports for Codecov
+# WHY pytest-cov not coverage.py directly: pytest-cov integrates with pytest's
+# subprocess model so coverage is measured even across live_server threads.
+pytest-cov>=4.1.0
+
+# Postgres driver — needed when CI runs against the postgres:15 service container
+# The prototype uses SQLite locally; CI uses Postgres to mirror production ESP.
+psycopg2-binary>=2.9.0
+
+# Needed for strict Decimal arithmetic tests (stdlib, listed for clarity)
+# No install needed — just documenting the intentional avoidance of floats

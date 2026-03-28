@@ -1,0 +1,157 @@
+##############################################################################
+# .github/workflows/playwright.yml
+#
+# GSoC Proposal: CI pipeline for Playwright E2E + Django unit tests.
+#
+# WHY THIS WORKFLOW EXISTS:
+# The legacy ESP test suite had no CI for browser tests — they were run
+# manually by developers, meaning regressions in the scheduling grid JS
+# were only caught after merging. This workflow runs every Playwright test
+# on every pull_request to main, giving reviewers a green/red signal before
+# any code lands.
+#
+# KEY DECISIONS:
+#   - postgres:15 service container mirrors the production ESP database engine.
+#     SQLite would hide Postgres-specific query bugs (e.g. strict type casting).
+#   - `playwright install --with-deps chromium` installs the browser binary
+#     AND its OS-level dependencies (fonts, libs) in one step — required on
+#     Ubuntu runners which don't ship Chromium by default.
+#   - `--headed=false` (headless) keeps CI fast and avoids needing a display
+#     server. Locally, developers can drop this flag to watch tests run.
+#   - Artifacts are uploaded on BOTH success and failure so developers always
+#     have traces to debug flaky tests, not just when things break.
+##############################################################################
+
+name: Playwright E2E & Django Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    # WHY pull_request trigger: catch regressions before merge, not after.
+    # This is the core CI value proposition for the GSoC proposal.
+
+jobs:
+  test:
+    name: Run Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false   # run all matrix entries even if one fails
+      matrix:
+        python-version: ["3.11"]
+
+    # ── Postgres service container ──────────────────────────────────────
+    # WHY postgres:15 not SQLite:
+    # ESP production uses PostgreSQL. Running tests against SQLite would
+    # hide Postgres-specific bugs (e.g. case-sensitive LIKE, strict FK
+    # enforcement, JSON field behaviour). The service container is torn
+    # down automatically after the job — no cleanup needed.
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB:       esp_test
+          POSTGRES_USER:     esp_user
+          POSTGRES_PASSWORD: esp_password
+        ports:
+          - 5432:5432
+        # Wait until Postgres is actually ready to accept connections
+        # WHY health check: without this, the Django test runner can start
+        # before Postgres finishes initialising and fail with "connection refused"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Python setup ────────────────────────────────────────────────
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          # Cache pip downloads so repeated runs don't re-download packages
+          cache: pip
+          cache-dependency-path: requirements.testing.txt
+
+      # ── 3. Install Python dependencies ─────────────────────────────────
+      - name: Install testing dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.testing.txt
+
+      # ── 4. Install Playwright browser + OS deps ────────────────────────
+      # WHY --with-deps: Ubuntu runners don't ship the system libraries
+      # (libglib, libnss, libatk, etc.) that Chromium needs. This flag
+      # installs them via apt in one command — the replacement for the
+      # old Selenium WebDriver download + PATH setup dance.
+      - name: Install Playwright Chromium browser
+        run: playwright install --with-deps chromium
+
+      # ── 5. Run Django unit tests (accounting controllers) ──────────────
+      - name: Run Django unit tests
+        env:
+          DJANGO_SETTINGS_MODULE: esp.settings
+          # Point Django at the Postgres service container
+          DATABASE_URL: postgres://esp_user:esp_password@localhost:5432/esp_test
+          # Allow Django ORM calls from Playwright's async event loop
+          DJANGO_ALLOW_ASYNC_UNSAFE: "1"
+        run: |
+          pytest esp/accounting/tests/ \
+            --tb=short \
+            --cov=esp/accounting \
+            --cov-report=xml:coverage-unit.xml \
+            -v
+
+      # ── 6. Run Playwright E2E tests ────────────────────────────────────
+      # WHY --headed=false: headless mode is ~30% faster and doesn't need
+      # a virtual display (Xvfb). Developers use --headed locally to watch
+      # the browser interact with the scheduling grid in real time.
+      #
+      # WHY --output=playwright-report: Playwright writes HTML traces and
+      # screenshots here. Uploaded as an artifact so developers can replay
+      # exactly what the browser saw when a test failed.
+      - name: Run Playwright E2E tests
+        env:
+          DJANGO_SETTINGS_MODULE: esp.settings
+          DATABASE_URL: postgres://esp_user:esp_password@localhost:5432/esp_test
+          DJANGO_ALLOW_ASYNC_UNSAFE: "1"
+        run: |
+          pytest tests/e2e/ \
+            --browser chromium \
+            --headed=false \
+            --tracing=retain-on-failure \
+            --screenshot=only-on-failure \
+            --output=playwright-report \
+            --tb=short \
+            --cov=esp \
+            --cov-report=xml:coverage-e2e.xml \
+            -v
+
+      # ── 7. Upload Playwright traces & screenshots ──────────────────────
+      # WHY always(): upload even on success so developers can review
+      # passing test traces, not just failures. This is critical for
+      # debugging intermittent flakiness in the scheduling grid drag-and-drop.
+      - name: Upload Playwright report and traces
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-py${{ matrix.python-version }}
+          path: playwright-report/
+          # Keep artifacts for 30 days — long enough to investigate flaky CI runs
+          retention-days: 30
+
+      # ── 8. Upload coverage reports to Codecov ─────────────────────────
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: coverage-unit.xml,coverage-e2e.xml
+          flags: unittests,e2etests
+          fail_ci_if_error: false   # don't fail CI if Codecov is down

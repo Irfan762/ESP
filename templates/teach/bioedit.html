@@ -1,0 +1,199 @@
+{% extends "main.html" %}
+{% block title %}Edit Teacher Biography — ESP{% endblock %}
+
+{% block stylesheets %}
+<style>
+  /* Replaces the old forms.css + table width="100%" layout entirely */
+  .bio-card {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  }
+  .form-label { font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+  .form-control, .form-select {
+    border-radius: 0.5rem;
+    border: 1.5px solid #dee2e6;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
+  }
+  textarea.form-control { min-height: 140px; resize: vertical; }
+  .avatar-circle {
+    width: 100px; height: 100px; border-radius: 50%;
+    object-fit: cover; border: 3px solid #e9ecef;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .avatar-placeholder {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: #e9ecef; display: flex; align-items: center;
+    justify-content: center; color: #adb5bd; font-size: 2.5rem;
+    border: 3px solid #dee2e6;
+  }
+  .section-divider {
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #6c757d;
+    border-bottom: 2px solid #e9ecef; padding-bottom: 8px; margin-bottom: 20px;
+  }
+  .toggle-card {
+    background: #f8f9ff; border: 1.5px solid #e0e7ff;
+    border-radius: 0.75rem; padding: 1rem 1.25rem;
+  }
+  .btn-save {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    border: none; border-radius: 2rem; padding: 0.75rem 2.5rem;
+    font-weight: 700; font-size: 1rem; letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(13,110,253,0.3);
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-save:hover { opacity: 0.92; transform: translateY(-1px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- Page header -->
+      <div class="mb-4">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/esp/" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="/teach/" class="text-decoration-none">Teach</a></li>
+            <li class="breadcrumb-item active">Edit Biography</li>
+          </ol>
+        </nav>
+        <h1 class="fw-bold mb-1">Edit Teacher Biography</h1>
+        <p class="lead text-muted">
+          Keep your profile up to date — students use this to learn about their teachers.
+        </p>
+      </div>
+
+      <!-- Error alert -->
+      <div class="alert alert-danger d-flex align-items-center shadow-sm border-0 rounded-3 mb-4" role="alert" id="form-errors" style="display:none!important">
+        <i class="fas fa-exclamation-triangle me-2 flex-shrink-0"></i>
+        <div><strong>Please fix the errors highlighted below.</strong></div>
+      </div>
+
+      <!-- Main form card -->
+      <div class="card bio-card">
+        <div class="card-body p-4 p-md-5">
+          <form enctype="multipart/form-data" action="/teach/bioedit" method="post" id="bio-form">
+            {% csrf_token %}
+
+            <!-- ── Visibility toggle ──────────────────────────────── -->
+            <div class="section-divider">Visibility</div>
+            <div class="toggle-card mb-4">
+              <div class="form-check form-switch d-flex gap-3 align-items-start m-0">
+                <input class="form-check-input mt-1" type="checkbox" id="id_hidden" name="hidden" role="switch" style="width:2.5em;height:1.4em">
+                <div>
+                  <label class="form-check-label fw-bold text-dark" for="id_hidden">
+                    Hide my biography from the public
+                  </label>
+                  <div class="form-text mt-1">
+                    Your major, college, graduation year, bio, photo, and classes normally appear publicly.
+                    Toggle this to hide everything (your name still appears in catalogs).
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Short bio ─────────────────────────────────────── -->
+            <div class="section-divider">About You</div>
+            <div class="mb-4">
+              <label for="id_slugbio" class="form-label">
+                Short Description
+                <span class="text-muted fw-normal">(50 chars max)</span>
+              </label>
+              <input type="text" class="form-control" id="id_slugbio" name="slugbio"
+                     maxlength="50" placeholder='e.g. "MIT sophomore studying Computer Science"'>
+              <div class="form-text">Shown next to your name in class listings.</div>
+            </div>
+
+            <!-- ── Full bio ──────────────────────────────────────── -->
+            <div class="mb-4">
+              <label for="id_bio" class="form-label">Full Biographical Sketch</label>
+              <textarea class="form-control" id="id_bio" name="bio"
+                        placeholder="Tell students about yourself — your background, interests, and why you love teaching this subject..."></textarea>
+              <div class="form-text">Markdown supported. Shown on your public teacher profile page.</div>
+            </div>
+
+            <!-- ── Profile picture ───────────────────────────────── -->
+            <div class="section-divider">Profile Picture</div>
+            <div class="mb-5">
+              <div class="d-flex align-items-center gap-4 flex-wrap">
+                <!-- Avatar preview -->
+                <div id="avatar-preview">
+                  <div class="avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                  </div>
+                </div>
+                <!-- Upload controls -->
+                <div class="flex-grow-1">
+                  <label for="id_picture" class="form-label">Upload a new photo</label>
+                  <input type="file" class="form-control" id="id_picture" name="picture"
+                         accept=".jpg,.jpeg,.gif,.png">
+                  <div class="form-text">JPG, GIF or PNG. Displayed as a circle — square images work best.</div>
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 mt-2" style="display:none" id="remove-photo-btn">
+                    <i class="fas fa-trash me-1"></i> Remove current photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Submit ────────────────────────────────────────── -->
+            <div class="section-divider">Save</div>
+            <input type="hidden" name="bio_submitted" value="true">
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-save btn-lg text-white">
+                <i class="fas fa-save me-2"></i> Save Biography
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Success toast (shown after save) -->
+      <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="save-toast" class="toast align-items-center text-bg-success border-0" role="alert">
+          <div class="d-flex">
+            <div class="toast-body fw-semibold">
+              <i class="fas fa-check-circle me-2"></i> Biography saved successfully!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Live avatar preview when user picks a file
+  document.getElementById('id_picture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('avatar-preview').innerHTML =
+        `<img src="${ev.target.result}" class="avatar-circle" alt="Preview">`;
+      document.getElementById('remove-photo-btn').style.display = 'inline-flex';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Show success toast if redirected back after save
+  if (window.location.search.includes('saved=1')) {
+    const toast = new bootstrap.Toast(document.getElementById('save-toast'));
+    toast.show();
+  }
+</script>
+{% endblock %}
