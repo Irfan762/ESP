@@ -1,15 +1,19 @@
-![alt text](image.png)
-This page is a Playwright test report.
-
+ Playwright Test Report Analysis
+ Test Summary
 Total tests: 46
-Passed: 6
-Failed: 40
+Passed: 6 
+Failed: 40 
+Working Tests
+Basic UI tests (title, link)
+Working on all browsers
+ Failing Tests
+Login page rendering
+Valid login redirect
+Invalid login handling
+Logout flow
 
-Basic tests (title, link) are working fine on all browsers.
-Login/authentication tests are failing (login, logout, redirect).
+![alt text](image.png)
 
-Meaning:
-Your app setup is okay, but the authentication feature or test setup has issues (backend, selectors, or timing).
 
 ![alt text](image-1.png)
 
