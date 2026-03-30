@@ -1,29 +1,39 @@
-🧪 Playwright Test Report Analysis
-📊 Test Summary
+ Playwright Test Report Analysis
+ Test Summary
 Total tests: 46
-Passed: 6 ✅
-Failed: 40 ❌
-✔ Working Tests
+Passed: 6 
+Failed: 40 
+Working Tests
 Basic UI tests (title, link)
-Working across all browsers
-❌ Failing Tests
+Working on all browsers
+ Failing Tests
 Login page rendering
 Valid login redirect
 Invalid login handling
 Logout flow
-📷 Test Report Screenshot
 
-🚨 Error Details
-❌ Error: ERR_CONNECTION_REFUSED
+![alt text](image.png)
 
-📌 Explanation
-Test is trying to open:
+
+![alt text](image-1.png)
+
+Simple explanation:
+
+Error: ERR_CONNECTION_REFUSED
+
+Means:
+Your test is trying to open
 http://127.0.0.1:8000/myesp/login/
-But the server is not running
-🖼 Screenshot Issue
+but server is not running
 
-📌 Explanation
-Screenshot is blank because page did not load
-📌 Reason
-Backend server is not running
-Playwright opened an empty page
+![alt text](image-2.png)
+
+Simple explanation:
+
+Screenshot is blank because
+page never loaded
+
+Reason:
+Server is not running → so Playwright opened nothing → blank screen
+
+give me in clean strcuture
